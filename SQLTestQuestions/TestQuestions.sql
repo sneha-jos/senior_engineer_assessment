@@ -19,7 +19,16 @@ query or group of queries that return the patient name, and their most recent ri
 Any patients that dont have a risk level should also be included in the results. 
 
 **********************/
-
+select pid, pname, rscore, rdate,rr, rdt
+from (
+select p.PersonID as pid, p.PersonName as pname, r.RiskScore as rscore, r.RiskDateTime as rdate, r.RiskScore as rscore,
+DENSE_RANK() OVER( order by r.RiskScore) rr,
+RANK() OVER(order by r.RiskDateTime desc) rdt
+from Risk r
+inner join Person p
+on r.PersonID = p.PersonID)
+where rdt = 1
+order by rr;
 
 
 
@@ -35,7 +44,9 @@ return the full name and nickname of each person. The nickname should contain on
 or be blank if no nickname exists.
 
 **********************/
-
+select PersonName, 
+SUBSTR(PersonName, instr(PersonName, "(") +1, (instr(PersonName, ")") - instr(PersonName, "(") -1)) as nickname
+from Person;
 
 
 /**********************
